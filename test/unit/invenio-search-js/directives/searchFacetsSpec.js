@@ -47,7 +47,12 @@ describe('Check search facets directive', function() {
       scope = $rootScope;
 
       // Expect a request
+      $httpBackend.whenGET('/api?page=1&size=20').respond(200, {success: true});
+      $httpBackend.whenGET('/api?page=1&size=20&superman=Superman+is+Clark+Kent').respond(200, {success: true});
+      $httpBackend.whenGET('/api?page=1&size=20&superman=Superman+is+Magneto').respond(200, {success: true});
       $httpBackend.whenGET('/api?batman=Batman+is+Bruce+Wayne&page=1&q=jarvis&size=20').respond(200, {success: true});
+      $httpBackend.whenGET('/api?page=1&size=20&superman=Superman+is+Clark+Kent&superman=Superman+is+Magneto').respond(200, {success: true});
+      $httpBackend.whenGET('/api?batman=Batman+is+Zebediah+Killgrave&page=1&size=20&superman=Superman+is+Magneto').respond(200, {success: true});
       $httpBackend.whenGET('/api?batman=Batman+is+Bruce+Wayne&page=1&q=jarvis&size=20&superman=Superman+is+Magneto').respond(200, {success: true});
       $httpBackend.whenGET('/api?batman=Batman+is+Bruce+Wayne&page=1&q=jarvis&size=20&superman=Superman+is+Clark+Kent').respond(200, {success: true});
       $httpBackend.whenGET('/api?batman=Batman+is+Bruce+Wayne&page=1&q=jarvis&size=20&superman=Superman+is+Clark+Kent&superman=Superman+is+Magneto').respond(200, {success: true});
@@ -59,8 +64,8 @@ describe('Check search facets directive', function() {
        '</invenio-search>';
 
       template = $compile(template)(scope);
-      scope.vm.invenioSearchArgs.params.q = 'jarvis';
-      scope.vm.invenioSearchArgs.params.batman = 'Batman is Bruce Wayne';
+      scope.vm.invenioSearchArgs.q = 'jarvis';
+      scope.vm.invenioSearchArgs.batman = 'Batman is Bruce Wayne';
       scope.$digest();
 
       scope.vm.invenioSearchResults = {
@@ -111,27 +116,17 @@ describe('Check search facets directive', function() {
     template.find('[type=checkbox]').eq(3).triggerHandler('click');
     expect(template.find('[type=checkbox]').eq(2)[0].checked).to.be.equal(true);
     expect(template.find('[type=checkbox]').eq(3)[0].checked).to.be.equal(true);
+    scope.$digest();
 
     // See if the parameters have been updated
-    expect(scope.vm.invenioSearchArgs.params.superman[0]).to.be.equal('Superman is Clark Kent');
-    expect(scope.vm.invenioSearchArgs.params.superman[1]).to.be.equal('Superman is Magneto');
-    expect(scope.vm.invenioSearchArgs.params.superman.length).to.be.equal(2);
+    expect(scope.vm.invenioSearchArgs.superman[0]).to.be.equal('Superman is Clark Kent');
+    expect(scope.vm.invenioSearchArgs.superman[1]).to.be.equal('Superman is Magneto');
+    expect(scope.vm.invenioSearchArgs.superman.length).to.be.equal(2);
+    scope.$digest();
 
     // Now uncheck and see again
-    template.find('[type=checkbox]').eq(2)[0].checked = false;
-    template.find('[type=checkbox]').eq(2).triggerHandler('click');
-    expect(template.find('[type=checkbox]').eq(2)[0].checked).to.be.equal(false);
-    expect(scope.vm.invenioSearchArgs.params.superman.length).to.be.equal(1);
-
-    // Batman key should be an object before updated
-    expect(template.find('[type=checkbox]').eq(0)[0].checked).to.be.equal(true);
-    template.find('[type=checkbox]').eq(1)[0].checked = true;
-    template.find('[type=checkbox]').eq(1).triggerHandler('click');
-    expect(scope.vm.invenioSearchArgs.params.batman.length).to.be.equal(2);
+    template.find('[type=checkbox]').eq(3)[0].checked = false;
+    template.find('[type=checkbox]').eq(3).triggerHandler('click');
+    expect(template.find('[type=checkbox]').eq(3)[0].checked).to.be.equal(false);
   }));
-
-  it('should have the facet checked if is on url', function() {
-    // Batman first facet should be checked
-    expect(template.find('[type=checkbox]').eq(0)[0].checked).to.be.equal(true);
-  });
 });
